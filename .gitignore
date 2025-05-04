@@ -1,0 +1,83 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cython build files
+cython_debug/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+lib/
+lib64/
+dist/
+build/
+*.egg-info/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook files
+.ipynb_checkpoints
+
+# Pytest
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# mypy
+.mypy_cache/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+
+# IDEs
+*.iml
+
+# .env files (for environment variables)
+.env
+.env.*
+
+# Logs
+*.log
+
+# SQLite database
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.bak
+*.tmp
+
+# VS Code settings folder
+.vscode/
+
+# JetBrains specific
+.idea/
+
+# Docker
+*.dockerfile
+
+# Virtualenv
+venv/

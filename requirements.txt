@@ -1,0 +1,40 @@
+# Wait wut?
+# No dependencies?
+# Oh, now I get it.
+# VanillAI as in Vanilla-Python
+# So, yip.
+# ...
+# You wanna hear my favourite episode of Family Guy?
+# It is S8E17. 
+# Here is the synopsis from IMDB
+# Brian and Stewie get locked in a bank vault where they are forced to deal with each other on a whole new level.
+# It is not funny but it is a testament to the writers' true potential in character development.
+# One would think that the writing shouldn't be as reliant to the cutaway gags as they are now.
+# I mean, you already established that you can create wonderful character-driven stories.
+# Anyway, here is an ascii art of Brian
+#    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠉⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠟⠀⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠸⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠃⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠀⠀⠀⡇⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠟⠀⠀⠀⠀⠀⠀⠀⢠⢱⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⡸⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢃⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⣠⠤⣀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⡾⠀⠀⠀⠀⠀⠀⢠⢶⢟⢻⣗⢿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⢠⠇⠀⠀⠀⠀⠀⢠⠇⠈⠒⠊⠑⠚⠓⠒⠒⠦⣄⠀⠀⠀⠀⠀⠀
+#   ⠀⣀⡤⣄⠀⢸⠀⠀⠀⠀⠀⠀⠸⠀⠀⠀⠀⠀⠀⠀⠀⠀⣶⣿⣦⠀⠀⠀⠀⠀
+#   ⡜⢁⣠⣶⠷⣼⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⠀⠀⠀⠀⠀
+#   ⢳⡾⠋⣠⣤⣿⠀⠀⠀⠀⠀⠀⠸⡀⠀⡀⠀⠀⠀⠀⠀⠀⢻⡿⠋⢠⣴⡒⠲⡄
+#   ⠀⠉⠓⠛⡿⡿⢢⡀⠀⣀⣀⡀⠀⠳⣄⢹⠿⣶⣶⠒⠒⠒⠋⡀⢀⣯⡈⢿⡆⢸
+#   ⠀⠀⠀⠀⢻⡵⢻⠑⠐⠓⠒⢮⠀⠀⠈⠩⣛⣒⣾⡀⢀⣠⣿⣽⣟⡿⠧⠼⠟⠃
+#   ⠀⠀⠀⠀⠀⠳⣙⢷⡄⠀⠀⢸⠀⠀⠀⠀⠀⠀⢣⢏⢩⡾⠗⢈⡼⠁⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠈⢻⡒⠒⠶⠥⠋⠀⠀⠀⠀⠀⠀⠻⣦⠴⠚⠁⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠱⣄⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣯⠖⠁⠒⢤⠀⠀⠀⠀⠀⠀⢈⣼⡆⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡏⠀⠀⠀⠀⣿⣇⣀⣀⣀⠠⠜⡟⠁⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡃⠀⠀⠀⢸⠁⠀⡟⠀⠀⠀⠰⢇⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⣅⣆⣀⣀⡼⠀⠀⠳⣄⣀⣀⣆⣾⠃⠀⠀⠀⠀⠀⠀
+#
+# Anyway, no deps.
+# Peanut butter jelly time, peanut butter jelly time
