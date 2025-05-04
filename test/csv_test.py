@@ -12,7 +12,7 @@ class TestCsv(unittest.TestCase):
         with open(cls.test_file, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(["Header1", "Header2", "Header3"])
-            writer.writerows([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6], [7.7, 8.8, 9.9]])
+            writer.writerows([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6], [7.7, 8.8, 9.9], [10.1, 11.1, 12.1]])
 
     @classmethod
     def tearDownClass(cls):
@@ -25,14 +25,14 @@ class TestCsv(unittest.TestCase):
     def test_init(self):
         """Test initialization with a file."""
         csv_obj = Csv(self.test_file)
-        self.assertEqual(len(csv_obj), 3)  # Should have 3 rows
+        self.assertEqual(len(csv_obj), 4)  # Should have 4 rows
 
     def test_add_row(self):
         """Test adding a valid row and raising an error for invalid row."""
         csv_obj = Csv(self.test_file)
         new_row = [10.1, 11.1, 12.1]
         csv_obj.add_row(new_row)
-        self.assertEqual(len(csv_obj), 4)  # Should have 4 rows after adding
+        self.assertEqual(len(csv_obj), 5)  # Should have 5 rows after adding
         with self.assertRaises(ValueError):
             csv_obj.add_row([1, 2])  # Invalid row
 
@@ -82,7 +82,29 @@ class TestCsv(unittest.TestCase):
             rows = list(reader)
         
         self.assertEqual(header, ["Header1", "Header2", "Header3"])
-        self.assertEqual(rows, [["1.1", "2.2", "3.3"], ["4.4", "5.5", "6.6"], ["7.7", "8.8", "9.9"]])
+        self.assertEqual(rows, [["1.1", "2.2", "3.3"], ["4.4", "5.5", "6.6"], ["7.7", "8.8", "9.9"], ["10.1", "11.1", "12.1"]])
+
+    def test_train_test_split(self):
+        """Test train-test split functionality."""
+        csv_obj = Csv(self.test_file)
+
+        # Test with 50% split and a fixed seed for reproducibility
+        train_csv, test_csv = csv_obj.train_test_split(test_size=0.5, seed=42)
+
+        # Verify the split proportions (50% for each)
+        self.assertEqual(len(train_csv), 2)  # Should have 2 rows in training set
+        self.assertEqual(len(test_csv), 2)  # Should have 2 rows in testing set
+
+        # Test with another seed and ensure reproducibility
+        train_csv_2, test_csv_2 = csv_obj.train_test_split(test_size=0.5, seed=42)
+        self.assertEqual(train_csv.rows, train_csv_2.rows)  # Should be identical due to the same seed
+        self.assertEqual(test_csv.rows, test_csv_2.rows)  # Should be identical due to the same seed
+
+        # Test for 80% train / 20% test split
+        train_csv_3, test_csv_3 = csv_obj.train_test_split(test_size=0.2, seed=42)
+        self.assertEqual(len(train_csv_3), 3)  # Should have 3 rows in training set
+        self.assertEqual(len(test_csv_3), 1)  # Should have 1 row in testing set
+        
 
 if __name__ == "__main__":
     unittest.main()
