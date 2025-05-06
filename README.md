@@ -10,8 +10,13 @@ After scikit implementation, I will decide on a DL framework to replicate and wi
 
 As the project continues, the future log will be updated.
 ## Future Log
+#### Visualization
+- [x] Font Engine
+- [x] Scatter Plot
+- [x] Line Plot
+- [ ] Multiple plots on top of each other
 #### Data Handling
-- [ ] CSV
+- [x] CSV
 #### Linear Models:
 - [ ] Ordinary Least Squares
 
