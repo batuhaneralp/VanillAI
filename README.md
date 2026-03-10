@@ -38,7 +38,7 @@ As the project continues, the future log will be updated.
 
 - [ ] Bayesian Regression
 
-- [ ] Logistic Regression
+- [x] Logistic Regression
 
 - [ ] Generalized Linear Models
 
