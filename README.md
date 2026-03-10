@@ -18,7 +18,7 @@ As the project continues, the future log will be updated.
 #### Data Handling
 - [x] CSV
 #### Linear Models:
-- [ ] Ordinary Least Squares
+- [x] Ordinary Least Squares
 
 - [ ] Ridge Regression And Classification
 
