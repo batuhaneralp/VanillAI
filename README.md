@@ -20,6 +20,8 @@ As the project continues, the future log will be updated.
 #### Linear Models:
 - [x] Ordinary Least Squares
 
+- [x] Non-Negative Least Squares
+
 - [ ] Ridge Regression And Classification
 
 - [ ] Lasso

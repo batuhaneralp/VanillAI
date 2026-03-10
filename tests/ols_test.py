@@ -37,5 +37,35 @@ class TestOrdinaryLeastSquares(unittest.TestCase):
         self.assertAlmostEqual(model.coefficients[1], -2.0, places=6)
         self.assertAlmostEqual(model.intercept, 5.0, places=6)
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_positive_constraint(self):
+        """Test that positive=True constrains coefficients to be non-negative."""
+        # Create data where unconstrained solution would have negative coefficients
+        X = [[1, 1], [2, 1], [3, 2], [4, 2]]
+        y = [1, 2, 3, 4]  # Simple increasing relationship
+        
+        # Unconstrained model
+        model_unconstrained = OrdinaryLeastSquares(positive=False)
+        model_unconstrained.fit(X, y)
+        
+        # Constrained model
+        model_constrained = OrdinaryLeastSquares(positive=True)
+        model_constrained.fit(X, y)
+        
+        # Check that constrained coefficients are non-negative
+        for coeff in model_constrained.coefficients:
+            self.assertGreaterEqual(coeff, 0.0, "Coefficients should be non-negative when positive=True")
+        
+        # Both models should make predictions (though potentially different)
+        pred_unconstrained = model_unconstrained.predict(X)
+        pred_constrained = model_constrained.predict(X)
+        
+        self.assertEqual(len(pred_unconstrained), len(X))
+        self.assertEqual(len(pred_constrained), len(X))
+
+    def test_positive_initialization(self):
+        """Test initialization with positive parameter."""
+        model_default = OrdinaryLeastSquares()
+        model_positive = OrdinaryLeastSquares(positive=True)
+        
+        self.assertFalse(model_default.positive)
+        self.assertTrue(model_positive.positive)
