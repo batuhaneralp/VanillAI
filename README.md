@@ -24,7 +24,7 @@ As the project continues, the future log will be updated.
 
 - [x] Ridge Regression And Classification (with CV)
 
-- [x] Lasso
+- [x] Lasso (with screening rules)
 
 - [ ] Multi-task Lasso
 

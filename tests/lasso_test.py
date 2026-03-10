@@ -149,17 +149,59 @@ class TestLassoRegression(unittest.TestCase):
         relevant_zero = sum(1 for i, c in enumerate(model.coefficients) if i >= 2 and abs(c) < 1e-6)
         self.assertGreater(relevant_zero, 0)  # At least some irrelevant features should be zero
 
-    def test_soft_thresholding(self):
-        """Test the soft thresholding operator."""
-        model = LassoRegression()
+    def test_screening_functionality(self):
+        """Test gap-safe screening rules functionality."""
+        model = LassoRegression(alpha=0.1, max_iter=100)
+        model.fit(self.X, self.y)
 
-        # Test cases for soft thresholding
-        self.assertEqual(model._soft_thresholding(0.0, 1.0), 0.0)
-        self.assertEqual(model._soft_thresholding(0.5, 1.0), 0.0)  # |0.5| < 1.0
-        self.assertEqual(model._soft_thresholding(1.5, 1.0), 0.5)   # 1.5 - 1.0
-        self.assertEqual(model._soft_thresholding(-1.5, 1.0), -0.5) # -1.5 + 1.0
-        self.assertEqual(model._soft_thresholding(2.0, 1.0), 1.0)
-        self.assertEqual(model._soft_thresholding(-2.0, 1.0), -1.0)
+        # Check screening attributes
+        self.assertIsInstance(model.n_features_active_, list)
+        self.assertIsInstance(model.screening_efficiency_, float)
+        self.assertGreaterEqual(model.screening_efficiency_, 0.0)
+        self.assertLessEqual(model.screening_efficiency_, 1.0)
+
+        # Active set history should be non-empty
+        self.assertGreater(len(model.n_features_active_), 0)
+
+        # Final active count should be <= total features
+        self.assertLessEqual(model.n_features_active_[-1], 4)
+
+    def test_screening_info_method(self):
+        """Test the get_screening_info method."""
+        model = LassoRegression(alpha=0.1)
+        model.fit(self.X, self.y)
+
+        info = model.get_screening_info()
+        self.assertIsInstance(info, dict)
+        self.assertIn('efficiency', info)
+        self.assertIn('active_history', info)
+        self.assertIn('final_active', info)
+        self.assertIn('total_features', info)
+
+        # Check values
+        self.assertEqual(info['total_features'], 4)
+        self.assertEqual(info['final_active'], model.n_features_active_[-1])
+        self.assertEqual(info['efficiency'], model.screening_efficiency_)
+
+    def test_screening_with_high_sparsity(self):
+        """Test screening with high regularization (should screen more features)."""
+        # Create data with clear irrelevant features
+        X_sparse = [
+            [1, 0, 0, 0], [2, 0, 0, 0], [3, 0, 0, 0], [4, 0, 0, 0],
+            [5, 0, 0, 0], [6, 0, 0, 0], [7, 0, 0, 0], [8, 0, 0, 0]
+        ]
+        y_sparse = [2, 4, 6, 8, 10, 12, 14, 16]  # Only depends on first feature
+
+        model = LassoRegression(alpha=1.0, max_iter=1000)  # High regularization
+        model.fit(X_sparse, y_sparse)
+
+        # Should achieve high screening efficiency
+        info = model.get_screening_info()
+        self.assertGreater(info['efficiency'], 0.5)  # At least 50% screening
+
+        # Most coefficients should be zero
+        n_zero = sum(1 for c in model.coefficients if abs(c) < 1e-6)
+        self.assertGreaterEqual(n_zero, 2)  # At least 2 features should be zero
 
 
 if __name__ == '__main__':
