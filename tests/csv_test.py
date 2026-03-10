@@ -1,7 +1,13 @@
 import unittest
 import os
-from data.csv import Csv
+import sys
+from pathlib import Path
 import csv
+
+# Add parent directory to path so imports work
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from data.csv import Csv
 
 
 class TestCsv(unittest.TestCase):

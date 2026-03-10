@@ -185,11 +185,13 @@ class Csv:
         if seed is not None:
             random.seed(seed)
 
-        random.shuffle(self.rows)
+        # Make a copy of rows to avoid mutating the original data
+        shuffled_rows = self.rows[:]
+        random.shuffle(shuffled_rows)
 
-        test_size = int(len(self.rows) * test_size)
-        train_rows = self.rows[test_size:]
-        test_rows = self.rows[:test_size]
+        test_count = round(len(shuffled_rows) * test_size)
+        train_rows = shuffled_rows[test_count:]
+        test_rows = shuffled_rows[:test_count]
 
         train_csv = Csv()
         if self.header:
