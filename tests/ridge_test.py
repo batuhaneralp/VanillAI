@@ -5,7 +5,7 @@ from pathlib import Path
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ml.regularized.ridge import RidgeRegression, RidgeClassifier
+from ml.regularized.ridge import RidgeRegression, RidgeClassifier, RidgeRegressionCV, RidgeClassifierCV
 
 
 class TestRidgeRegression(unittest.TestCase):
@@ -172,6 +172,150 @@ class TestRidgeClassifier(unittest.TestCase):
         # Should achieve high accuracy on training data
         accuracy = model.eval(X_sep, y_sep)
         self.assertGreaterEqual(accuracy, 0.9)  # Allow some tolerance
+
+
+class TestRidgeRegressionCV(unittest.TestCase):
+    """Test cases for Ridge Regression with Cross-Validation."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Simple linear relationship: y = 2*x1 + 3*x2 + 1
+        self.X = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
+        self.y = [6, 11, 16, 21, 26, 31]  # 2*1 + 3*1 + 1 = 6, etc.
+
+    def test_initialization(self):
+        """Test RidgeRegressionCV initialization."""
+        model = RidgeRegressionCV(alphas=[0.1, 1.0], cv=3)
+        self.assertEqual(model.alphas, [0.1, 1.0])
+        self.assertEqual(model.cv, 3)
+        self.assertIsNone(model.alpha_)
+
+        # Test default alphas
+        model_default = RidgeRegressionCV()
+        self.assertEqual(model_default.alphas, [0.01, 0.1, 1.0, 10.0, 100.0])
+        self.assertEqual(model_default.cv, 5)
+
+    def test_fit_and_predict(self):
+        """Test basic fitting and prediction with CV."""
+        model = RidgeRegressionCV(alphas=[0.01, 0.1, 1.0], cv=3, seed=42)
+        model.fit(self.X, self.y)
+
+        # Check that optimal alpha was selected
+        self.assertIsNotNone(model.alpha_)
+        self.assertIn(model.alpha_, [0.01, 0.1, 1.0])
+
+        # Check CV results
+        self.assertIsNotNone(model.cv_results_)
+        self.assertEqual(len(model.cv_results_['alphas']), 3)
+        self.assertEqual(len(model.cv_results_['scores']), 3)
+
+        # Check that coefficients were learned
+        self.assertIsNotNone(model.coefficients)
+        self.assertIsInstance(model.intercept, float)
+
+        # Test predictions
+        predictions = model.predict(self.X)
+        self.assertEqual(len(predictions), len(self.y))
+
+    def test_cv_selects_reasonable_alpha(self):
+        """Test that CV selects a reasonable alpha."""
+        # Create data with some noise to make regularization beneficial
+        X_noisy = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8]]
+        y_noisy = [6.1, 10.9, 16.2, 20.8, 26.1, 30.9, 36.2, 40.8]  # Add small noise
+
+        model = RidgeRegressionCV(alphas=[0.001, 0.01, 0.1, 1.0, 10.0], cv=4, seed=42)
+        model.fit(X_noisy, y_noisy)
+
+        # Should select some positive alpha (not too small or too large)
+        self.assertGreater(model.alpha_, 0.001)
+        self.assertLess(model.alpha_, 10.0)
+
+    def test_predict_unfitted_model(self):
+        """Test that predicting without fitting raises error."""
+        model = RidgeRegressionCV()
+        with self.assertRaises(ValueError):
+            model.predict(self.X)
+
+
+class TestRidgeClassifierCV(unittest.TestCase):
+    """Test cases for Ridge Classifier with Cross-Validation."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Binary classification: separable data
+        self.X_binary = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8]]
+        self.y_binary = [0, 0, 0, 0, 1, 1, 1, 1]
+
+        # Multiclass classification
+        self.X_multi = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8]]
+        self.y_multi = [0, 0, 1, 1, 2, 2, 0, 1]
+
+    def test_initialization(self):
+        """Test RidgeClassifierCV initialization."""
+        model = RidgeClassifierCV(alphas=[0.1, 1.0], cv=3)
+        self.assertEqual(model.alphas, [0.1, 1.0])
+        self.assertEqual(model.cv, 3)
+        self.assertIsNone(model.alpha_)
+
+        # Test default alphas
+        model_default = RidgeClassifierCV()
+        self.assertEqual(model_default.alphas, [0.01, 0.1, 1.0, 10.0, 100.0])
+        self.assertEqual(model_default.cv, 5)
+
+    def test_binary_classification_cv(self):
+        """Test binary classification with CV."""
+        model = RidgeClassifierCV(alphas=[0.01, 0.1, 1.0], cv=3, seed=42, iterations=1000)
+        model.fit(self.X_binary, self.y_binary)
+
+        # Check that optimal alpha was selected
+        self.assertIsNotNone(model.alpha_)
+        self.assertIn(model.alpha_, [0.01, 0.1, 1.0])
+
+        # Check CV results
+        self.assertIsNotNone(model.cv_results_)
+        self.assertEqual(len(model.cv_results_['alphas']), 3)
+        self.assertEqual(len(model.cv_results_['scores']), 3)
+
+        # Check that model was fitted
+        self.assertIsNotNone(model.coefficients)
+        self.assertIsInstance(model.intercept, float)
+
+        # Test predictions
+        predictions = model.predict(self.X_binary)
+        self.assertEqual(len(predictions), len(self.y_binary))
+
+        # Should achieve reasonable accuracy
+        accuracy = model.eval(self.X_binary, self.y_binary)
+        self.assertGreater(accuracy, 0.7)  # Should be good on training data
+
+    def test_multiclass_classification_cv(self):
+        """Test multiclass classification with CV."""
+        model = RidgeClassifierCV(alphas=[0.01, 0.1, 1.0], cv=3, seed=42, iterations=1000)
+        model.fit(self.X_multi, self.y_multi)
+
+        # Check that optimal alpha was selected
+        self.assertIsNotNone(model.alpha_)
+        self.assertIn(model.alpha_, [0.01, 0.1, 1.0])
+
+        # Check that model was fitted
+        self.assertIsNotNone(model.coefficients)
+        self.assertIsNotNone(model.intercept)
+        self.assertIsNotNone(model.classes_)
+
+        # Coefficients should be list of lists for multiclass
+        self.assertIsInstance(model.coefficients, list)
+        self.assertIsInstance(model.coefficients[0], list)
+        self.assertIsInstance(model.intercept, list)
+
+        # Test predictions
+        predictions = model.predict(self.X_multi)
+        self.assertEqual(len(predictions), len(self.y_multi))
+
+    def test_predict_unfitted_model(self):
+        """Test that predicting without fitting raises error."""
+        model = RidgeClassifierCV()
+        with self.assertRaises(ValueError):
+            model.predict(self.X_binary)
 
 
 if __name__ == '__main__':

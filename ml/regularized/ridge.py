@@ -1,4 +1,5 @@
 import math
+import random
 from core.array import Array
 from ml.common.classifier import Classifier
 
@@ -469,3 +470,360 @@ class RidgeClassifier(Classifier):
         predictions = self.predict(X)
         correct = sum(1 for pred, true in zip(predictions, y) if pred == true)
         return correct / len(y) if len(y) > 0 else 0.0
+
+
+def _k_fold_split(X, y, k=5, seed=None):
+    """
+    Split data into k folds for cross-validation.
+
+    Args:
+        X (list): Feature matrix
+        y (list): Target values
+        k (int): Number of folds
+        seed (int): Random seed
+
+    Returns:
+        list: List of (X_train, X_val, y_train, y_val) tuples
+    """
+    if seed is not None:
+        random.seed(seed)
+
+    n_samples = len(X)
+    indices = list(range(n_samples))
+    random.shuffle(indices)
+
+    fold_size = n_samples // k
+    folds = []
+
+    for i in range(k):
+        start_idx = i * fold_size
+        if i == k - 1:
+            end_idx = n_samples
+        else:
+            end_idx = (i + 1) * fold_size
+
+        val_indices = indices[start_idx:end_idx]
+        train_indices = indices[:start_idx] + indices[end_idx:]
+
+        X_train = [X[j] for j in train_indices]
+        y_train = [y[j] for j in train_indices]
+        X_val = [X[j] for j in val_indices]
+        y_val = [y[j] for j in val_indices]
+
+        folds.append((X_train, X_val, y_train, y_val))
+
+    return folds
+
+
+class RidgeRegressionCV:
+    """
+    Ridge Regression with built-in Cross-Validation for alpha selection.
+
+    This class automatically selects the best regularization parameter (alpha)
+    using k-fold cross-validation, then fits the final model with the optimal alpha.
+
+    Mathematical Foundation:
+    ========================
+
+    1. Cross-Validation Score:
+       For each alpha, compute CV score as average validation error across k folds:
+       CV(α) = (1/k) Σ MSE_fold_i(α)
+
+       Where MSE_fold_i = (1/n_val) Σ (y_val - ŷ_val)²
+
+    2. Optimal Alpha Selection:
+       α̂ = argmin_α CV(α)
+
+    3. Final Model:
+       Fit RidgeRegression with α̂ on full training data
+
+    Algorithm:
+    ==========
+    1. For each candidate alpha:
+       a. Split data into k folds
+       b. For each fold: train on k-1 folds, validate on remaining fold
+       c. Compute average validation MSE across folds
+    2. Select alpha with lowest CV MSE
+    3. Fit final model on full data with optimal alpha
+
+    Args:
+        alphas (list): List of alpha values to try. Default [0.01, 0.1, 1.0, 10.0, 100.0]
+        cv (int): Number of cross-validation folds. Default 5.
+        seed (int): Random seed for reproducible CV splits. Default None.
+
+    Attributes:
+        alpha_ (float): Selected optimal alpha value
+        best_score_ (float): Best cross-validation score (MSE)
+        cv_results_ (dict): Dictionary with 'alphas' and 'scores' from CV
+        coefficients (list): Final model coefficients
+        intercept (float): Final model intercept
+
+    Examples:
+        # Default alpha search
+        model = RidgeRegressionCV()
+        model.fit(X_train, y_train)
+        print(f"Optimal alpha: {model.alpha_}")
+
+        # Custom alpha range
+        import numpy as np
+        alphas = np.logspace(-6, 6, 13)
+        model = RidgeRegressionCV(alphas=alphas, cv=10)
+        model.fit(X_train, y_train)
+    """
+
+    def __init__(self, alphas=None, cv=5, seed=None):
+        """
+        Initialize Ridge Regression with CV.
+
+        Args:
+            alphas (list): Alpha values to try. If None, uses [0.01, 0.1, 1.0, 10.0, 100.0]
+            cv (int): Number of CV folds. Default 5.
+            seed (int): Random seed. Default None.
+        """
+        if alphas is None:
+            self.alphas = [0.01, 0.1, 1.0, 10.0, 100.0]
+        else:
+            self.alphas = alphas
+        self.cv = cv
+        self.seed = seed
+
+        self.alpha_ = None
+        self.best_score_ = float('inf')
+        self.cv_results_ = None
+        self.coefficients = None
+        self.intercept = None
+
+    def _cross_validate(self, X, y):
+        """
+        Perform cross-validation to find optimal alpha.
+
+        Args:
+            X (list): Feature matrix
+            y (list): Target values
+
+        Returns:
+            tuple: (best_alpha, best_score, cv_results)
+        """
+        cv_scores = []
+
+        for alpha in self.alphas:
+            fold_scores = []
+
+            folds = _k_fold_split(X, y, k=self.cv, seed=self.seed)
+            for X_train, X_val, y_train, y_val in folds:
+                # Train model on fold
+                model = RidgeRegression(alpha=alpha)
+                model.fit(X_train, y_train)
+
+                # Evaluate on validation fold
+                predictions = model.predict(X_val)
+
+                # Compute MSE
+                mse = sum((pred - true) ** 2 for pred, true in zip(predictions, y_val)) / len(y_val)
+                fold_scores.append(mse)
+
+            # Average MSE across folds
+            avg_score = sum(fold_scores) / len(fold_scores)
+            cv_scores.append(avg_score)
+
+        # Find best alpha
+        best_idx = cv_scores.index(min(cv_scores))
+        best_alpha = self.alphas[best_idx]
+        best_score = cv_scores[best_idx]
+
+        cv_results = {
+            'alphas': self.alphas.copy(),
+            'scores': cv_scores
+        }
+
+        return best_alpha, best_score, cv_results
+
+    def fit(self, X, y):
+        """
+        Fit Ridge Regression with CV alpha selection.
+
+        Args:
+            X (list): Feature matrix
+            y (list): Target values
+
+        Examples:
+            X_train = [[1, 2], [3, 4], [5, 6]]
+            y_train = [3, 7, 11]
+            model = RidgeRegressionCV()
+            model.fit(X_train, y_train)
+        """
+        # Perform cross-validation
+        self.alpha_, self.best_score_, self.cv_results_ = self._cross_validate(X, y)
+
+        # Fit final model with optimal alpha
+        final_model = RidgeRegression(alpha=self.alpha_)
+        final_model.fit(X, y)
+
+        self.coefficients = final_model.coefficients
+        self.intercept = final_model.intercept
+
+    def predict(self, X):
+        """
+        Predict using the fitted model.
+
+        Args:
+            X (list): Feature vectors
+
+        Returns:
+            list: Predicted values
+
+        Raises:
+            ValueError: If model hasn't been fitted
+        """
+        if self.coefficients is None:
+            raise ValueError("Model must be fitted before making predictions")
+
+        return RidgeRegression.predict(self, X)
+
+
+class RidgeClassifierCV(RidgeClassifier):
+    """
+    Ridge Classifier with built-in Cross-Validation for alpha selection.
+
+    This class automatically selects the best regularization parameter (alpha)
+    using k-fold cross-validation, then fits the final model with the optimal alpha.
+
+    Mathematical Foundation:
+    ========================
+
+    1. Cross-Validation Score:
+       For each alpha, compute CV score as average validation accuracy across k folds:
+       CV(α) = (1/k) Σ accuracy_fold_i(α)
+
+       Where accuracy_fold_i = (1/n_val) Σ I(ŷ_val == y_val)
+
+    2. Optimal Alpha Selection:
+       α̂ = argmax_α CV(α)
+
+    3. Final Model:
+       Fit RidgeClassifier with α̂ on full training data
+
+    Algorithm:
+    ==========
+    1. For each candidate alpha:
+       a. Split data into k folds
+       b. For each fold: train on k-1 folds, validate on remaining fold
+       c. Compute average validation accuracy across folds
+    2. Select alpha with highest CV accuracy
+    3. Fit final model on full data with optimal alpha
+
+    Args:
+        alphas (list): List of alpha values to try. Default [0.01, 0.1, 1.0, 10.0, 100.0]
+        cv (int): Number of cross-validation folds. Default 5.
+        seed (int): Random seed for reproducible CV splits. Default None.
+        learning_rate (float): Learning rate for gradient descent. Default 0.01.
+        iterations (int): Maximum iterations for training. Default 1000.
+
+    Attributes:
+        alpha_ (float): Selected optimal alpha value
+        best_score_ (float): Best cross-validation score (accuracy)
+        cv_results_ (dict): Dictionary with 'alphas' and 'scores' from CV
+        coefficients: Final model coefficients
+        intercept: Final model intercept
+        classes_: Unique class labels
+
+    Examples:
+        # Default alpha search
+        model = RidgeClassifierCV()
+        model.fit(X_train, y_train)
+        print(f"Optimal alpha: {model.alpha_}")
+
+        # Custom alpha range
+        import numpy as np
+        alphas = np.logspace(-6, 6, 13)
+        model = RidgeClassifierCV(alphas=alphas, cv=10)
+        model.fit(X_train, y_train)
+    """
+
+    def __init__(self, alphas=None, cv=5, seed=None, learning_rate=0.01, iterations=1000):
+        """
+        Initialize Ridge Classifier with CV.
+
+        Args:
+            alphas (list): Alpha values to try. If None, uses [0.01, 0.1, 1.0, 10.0, 100.0]
+            cv (int): Number of CV folds. Default 5.
+            seed (int): Random seed. Default None.
+            learning_rate (float): Learning rate. Default 0.01.
+            iterations (int): Max iterations. Default 1000.
+        """
+        if alphas is None:
+            self.alphas = [0.01, 0.1, 1.0, 10.0, 100.0]
+        else:
+            self.alphas = alphas
+        self.cv = cv
+        self.seed = seed
+
+        self.alpha_ = None
+        self.best_score_ = 0.0
+        self.cv_results_ = None
+
+        # Initialize parent class with default alpha (will be overridden in fit)
+        super().__init__(alpha=1.0, learning_rate=learning_rate, iterations=iterations)
+
+    def _cross_validate(self, X, y):
+        """
+        Perform cross-validation to find optimal alpha.
+
+        Args:
+            X (list): Feature matrix
+            y (list): Target labels
+
+        Returns:
+            tuple: (best_alpha, best_score, cv_results)
+        """
+        cv_scores = []
+
+        for alpha in self.alphas:
+            fold_scores = []
+
+            folds = _k_fold_split(X, y, k=self.cv, seed=self.seed)
+            for X_train, X_val, y_train, y_val in folds:
+                # Train model on fold
+                model = RidgeClassifier(alpha=alpha, learning_rate=self.learning_rate, iterations=self.iterations)
+                model.fit(X_train, y_train)
+
+                # Evaluate on validation fold
+                accuracy = model.eval(X_val, y_val)
+                fold_scores.append(accuracy)
+
+            # Average accuracy across folds
+            avg_score = sum(fold_scores) / len(fold_scores)
+            cv_scores.append(avg_score)
+
+        # Find best alpha (highest accuracy)
+        best_idx = cv_scores.index(max(cv_scores))
+        best_alpha = self.alphas[best_idx]
+        best_score = cv_scores[best_idx]
+
+        cv_results = {
+            'alphas': self.alphas.copy(),
+            'scores': cv_scores
+        }
+
+        return best_alpha, best_score, cv_results
+
+    def fit(self, X, y):
+        """
+        Fit Ridge Classifier with CV alpha selection.
+
+        Args:
+            X (list): Feature matrix
+            y (list): Target labels
+
+        Examples:
+            X_train = [[1, 2], [3, 4], [5, 6]]
+            y_train = [0, 1, 0]
+            model = RidgeClassifierCV()
+            model.fit(X_train, y_train)
+        """
+        # Perform cross-validation
+        self.alpha_, self.best_score_, self.cv_results_ = self._cross_validate(X, y)
+
+        # Fit final model with optimal alpha
+        self.alpha = self.alpha_  # Set the alpha for the parent class
+        super().fit(X, y)

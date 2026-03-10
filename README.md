@@ -22,9 +22,9 @@ As the project continues, the future log will be updated.
 
 - [x] Non-Negative Least Squares
 
-- [x] Ridge Regression And Classification
+- [x] Ridge Regression And Classification (with CV)
 
-- [ ] Lasso
+- [x] Lasso
 
 - [ ] Multi-task Lasso
 
